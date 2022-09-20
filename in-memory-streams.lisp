@@ -6,10 +6,12 @@
 (defpackage :in-memory-streams
   (:nicknames :ims)
   (:use :cl :trivial-gray-streams)
-  (:export make-input-stream
+  (:export get-elements
+           make-input-stream
            make-io-stream
            make-output-stream
            read-element
+           stream-length
            write-element
            with-input-stream
            with-io-stream
@@ -183,6 +185,11 @@
 
 (defmethod stream-element-type ((stream in-memory-stream))
   (buffer-element-type (buffer stream)))
+
+(defgeneric stream-length (stream))
+
+(defmethod stream-length ((stream in-memory-stream))
+  (buffer-count (buffer stream)))
 
 
 ;;;
