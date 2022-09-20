@@ -22,7 +22,7 @@
   :depends-on ("fiveam" "in-memory-streams")
   :in-order-to ((test-op (load-op "in-memory-streams/tests")))
   :perform (test-op (o s)
-             (let ((tests (uiop:find-symbol* 'in-memory-streams-tests
+             (let ((tests (uiop:find-symbol* 'in-memory-streams
                                              :in-memory-streams/tests)))
                (uiop:symbol-call :fiveam 'run! tests)))
   :components ((:file "tests")))
