@@ -34,14 +34,14 @@ of ~in-memory-streams~.
 ** Input streams
 
 #+BEGIN_SRC lisp
-(make-input-stream seq &key (start 0) end element-type) => stream
+  (make-input-stream seq &key (start 0) end element-type) => stream
 #+END_SRC
 
 Return an input stream which will supply the elements of /seq/ between /start/
 and /end/ in order.
 
 #+BEGIN_SRC lisp
-(with-input-stream (var seq &key (start 0) end element-type) &body body)
+  (with-input-stream (var seq &key (start 0) end element-type) &body body)
 #+END_SRC
 
 Within /body/, /var/ is bound to an input stream defined by /seq/, /start/,
@@ -51,7 +51,7 @@ To get one element from an input stream, the /read-element/ method must be used
 instead of /read-byte/.
 
 #+BEGIN_SRC lisp
-(read-element stream &optional eof-error-p eof-value) => element
+  (read-element stream &optional eof-error-p eof-value) => element
 #+END_SRC
 
 Like /read-byte/, but for input streams containing any type of elements.
@@ -62,14 +62,14 @@ function can be used.
 ** Output streams
 
 #+BEGIN_SRC lisp
-(make-output-stream &key element-type) => stream
+  (make-output-stream &key element-type) => stream
 #+END_SRC
 
 Return an output stream which will accumulate the elements written to it for
 the benefit of the /get-elements/ function.
 
 #+BEGIN_SRC lisp
-(with-output-stream (var &key element-type) &body body) => vector
+  (with-output-stream (var &key element-type) &body body) => vector
 #+END_SRC
 
 Within /body/, /var/ is bound to an output stream. After all the forms in
@@ -81,7 +81,7 @@ To write one element to an output stream, the /write-element/ method must be
 used instead of /write-byte/.
 
 #+BEGIN_SRC lisp
-(write-element element stream) => element
+  (write-element element stream) => element
 #+END_SRC
 
 Like /write-byte/, but for output streams containing any type of elements.
@@ -90,7 +90,7 @@ To write several elements to an output stream, the regular /write-sequence/
 function can be used.
 
 #+BEGIN_SRC lisp
-(get-elements stream) => vector
+  (get-elements stream) => vector
 #+END_SRC
 
 Return the elements that were written to a /stream/.
@@ -98,14 +98,14 @@ Return the elements that were written to a /stream/.
 ** IO streams
 
 #+BEGIN_SRC lisp
-(make-io-stream &key element-type) => stream
+  (make-io-stream &key element-type) => stream
 #+END_SRC
 
 Return a stream which will supply the elements that have been written to it in
 order.
 
 #+BEGIN_SRC lisp
-(with-io-stream (var &key element-type) &body body)
+  (with-io-stream (var &key element-type) &body body)
 #+END_SRC
 
 Within /body/, /var/ is bound to an io stream. The result of the last form of
@@ -118,10 +118,37 @@ functions for input streams and for output streams can be used with io streams
 ** Introspection
 
 #+BEGIN_SRC lisp
-(stream-length stream) => integer
+  (stream-length stream) => integer
 #+END_SRC
 
 Return the number of elements in a /stream/.
+
+* Example
+
+#+BEGIN_SRC lisp
+  (let ((y 0.0d0)
+        (z 0.0d0))
+    (defun running-average (input output)
+      (let ((x (read-element input nil nil)))
+        (when x
+          (write-element (/ (+ x y z) 3.0d0) output)
+          (setf z y)
+          (setf y x)
+          (running-average input output)))))
+
+  (let ((numbers #(1.1688306397068886d0 1.8379697869542646d0 0.6229625662395764d0
+                   0.14284584292221325d0 1.396517204140343d0 1.735972750395848d0
+                   0.7149398779650111d0 1.0309614956803217d0 0.9725293631719216d0
+                   1.5689075891259785d0)))
+    (with-input-stream (input numbers :element-type 'double-float)
+      (with-output-stream (output :element-type 'double-float)
+        (running-average input output)))
+
+=> #(0.38961021323562955d0 1.002266808887051d0 1.2099209976335765d0
+     0.8679260653720181d0 0.7207752044340442d0 1.0917785991528015d0
+     1.282476610833734d0 1.1606247080137269d0 0.9061435789390848d0
+     1.1907994826594073d0)
+#+END_SRC
 
 * Tests
 
