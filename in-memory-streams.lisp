@@ -186,7 +186,8 @@
 (defmethod stream-element-type ((stream in-memory-stream))
   (buffer-element-type (buffer stream)))
 
-(defgeneric stream-length (stream))
+(defgeneric stream-length (stream)
+  (:documentation "Return the number of elements in a STREAM."))
 
 (defmethod stream-length ((stream in-memory-stream))
   (buffer-count (buffer stream)))
@@ -202,7 +203,9 @@
 (defmethod stream-listen ((stream input-stream))
   (plusp (buffer-count (buffer stream))))
 
-(defgeneric read-element (stream &optional eof-error-p eof-value))
+(defgeneric read-element (stream &optional eof-error-p eof-value)
+  (:documentation
+   "Like READ-BYTE, but for input streams containing any type of elements."))
 
 (defmethod read-element ((stream input-stream)
                          &optional (eof-error-p t) eof-value)
@@ -220,6 +223,8 @@
   (clear (buffer stream)))
 
 (defun make-input-stream (seq &key (start 0) end element-type)
+  "Return an input stream which will supply the elements of SEQ between START
+and END in order."
   (let* ((end (or end (length seq)))
          (length (- end start))
          (element-type (cond
@@ -239,6 +244,8 @@
 
 (defmacro with-input-stream ((var seq &key (start 0) end element-type)
                              &body body)
+  "Within BODY, VAR is bound to an input stream defined by SEQ, START, END and
+ELEMENT-TYPE. The result of the last form of BODY is returned."
   `(with-open-stream (,var (make-input-stream ,seq
                                               :start ,start
                                               :end ,end
@@ -253,7 +260,9 @@
 (defclass output-stream (in-memory-stream fundamental-output-stream)
   ())
 
-(defgeneric write-element (element stream))
+(defgeneric write-element (element stream)
+  (:documentation
+   "Like WRITE-BYTE, but for output streams containing any type of elements."))
 
 (defmethod write-element (element (stream output-stream))
   (add-element (buffer stream) element))
@@ -265,7 +274,8 @@
 (defmethod stream-clear-output ((stream output-stream))
   (clear (buffer stream)))
 
-(defgeneric get-elements (stream))
+(defgeneric get-elements (stream)
+  (:documentation "Return the elements that were written to a STREAM."))
 
 (defmethod get-elements ((stream output-stream))
   (let* ((buffer (buffer stream))
@@ -276,6 +286,8 @@
     elements))
 
 (defun make-output-stream (&key element-type)
+  "Return an output stream which will accumulate the elements written to it for
+the benefit of the GET-ELEMENTS function."
   (let* ((length 128)
          (element-type (cond
                          (element-type element-type)
@@ -291,6 +303,9 @@
                                           :count 0))))
 
 (defmacro with-output-stream ((var &key element-type) &body body)
+  "Within BODY, VAR is bound to an output stream. After all the forms in BODY
+have been executed, the elements that have been written to VAR (and that
+haven't been consumed by a call to GET-ELEMENTS within BODY) are returned."
   `(with-open-stream (,var (make-output-stream :element-type ,element-type))
      ,@body
      (get-elements ,var)))
@@ -304,6 +319,8 @@
   ())
 
 (defun make-io-stream (&key element-type)
+  "Return a stream which will supply the elements that have been written to it
+in order."
   (let* ((length 128)
          (element-type (cond
                          (element-type element-type)
@@ -319,5 +336,7 @@
                                           :count 0))))
 
 (defmacro with-io-stream ((var &key element-type) &body body)
+  "Within BODY, VAR is bound to an io stream. The result of the last form of
+BODY is returned."
   `(with-open-stream (,var (make-io-stream :element-type ,element-type))
      ,@body))
