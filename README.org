@@ -125,6 +125,9 @@ Return the number of elements in a /stream/.
 
 * Example
 
+The following example computes a running average of the last 3 numbers of the
+input stream.
+
 #+BEGIN_SRC lisp
   (let ((y 0.0d0)
         (z 0.0d0))
@@ -132,8 +135,7 @@ Return the number of elements in a /stream/.
       (let ((x (read-element input nil nil)))
         (when x
           (write-element (/ (+ x y z) 3.0d0) output)
-          (setf z y)
-          (setf y x)
+          (shiftf z y x)
           (running-average input output)))))
 
   (let ((numbers #(1.1688306397068886d0 1.8379697869542646d0 0.6229625662395764d0
@@ -142,7 +144,7 @@ Return the number of elements in a /stream/.
                    1.5689075891259785d0)))
     (with-input-stream (input numbers :element-type 'double-float)
       (with-output-stream (output :element-type 'double-float)
-        (running-average input output)))
+        (running-average input output))))
 
 => #(0.38961021323562955d0 1.002266808887051d0 1.2099209976335765d0
      0.8679260653720181d0 0.7207752044340442d0 1.0917785991528015d0
