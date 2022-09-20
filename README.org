@@ -123,7 +123,23 @@ functions for input streams and for output streams can be used with io streams
 
 Return the number of elements in a /stream/.
 
-* Example
+* Examples
+
+The following example interleaves the elements of 2 streams.
+
+#+BEGIN_SRC lisp
+  (with-input-stream (in1 '(:a :b :c :d :e))
+    (with-input-stream (in2 '(0 1 2))
+      (with-output-stream (out)
+        (loop :for x = (read-element in1 nil nil)
+              :for y = (read-element in2 nil nil)
+              :while (and x y)
+              :do (progn
+                    (write-element x out)
+                    (write-element y out))))))
+
+=> #(:A 0 :B 1 :C 2)
+#+END_SRC
 
 The following example computes a running average of the last 3 numbers of the
 input stream.
