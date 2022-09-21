@@ -89,9 +89,9 @@
   (when (= (buffer-count ring-buffer) (buffer-size ring-buffer))
     (resize ring-buffer (* 2 (buffer-size ring-buffer))))
   (with-slots (buffer size end count) ring-buffer
-    (setf (aref buffer end) element)
     (when (= end size)
       (setf end 0))
+    (setf (aref buffer end) element)
     (incf count)
     (incf end))
   element)
@@ -138,8 +138,8 @@
         (values nil nil)
         (let ((element (aref buffer start)))
           (incf start)
-          (when (> start size)
-            (decf start size))
+          (when (= start size)
+            (setf start 0))
           (decf count)
           (values element t)))))
 
