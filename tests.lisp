@@ -128,8 +128,8 @@
     (is (= 0 (buffer-start rb)))
     (is (= 15 (buffer-end rb)))
     (is (= 15 (buffer-count rb)))
-    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
-                (buffer rb))))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)
+                (subseq (buffer rb) 0 15))))
   (let* ((b (make-array 10
                         :element-type 'fixnum
                         :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
@@ -156,8 +156,8 @@
     (is (= 0 (buffer-start rb)))
     (is (= 15 (buffer-end rb)))
     (is (= 15 (buffer-count rb)))
-    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
-                (buffer rb)))))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)
+                (subseq (buffer rb) 0 15)))))
 
 (test add-elements
   (let* ((b (make-array 10
@@ -183,8 +183,8 @@
     (is (= 0 (buffer-start rb)))
     (is (= 15 (buffer-end rb)))
     (is (= 15 (buffer-count rb)))
-    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
-                (buffer rb))))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)
+                (subseq (buffer rb) 0 15))))
   (let* ((b (make-array 10
                         :element-type 'fixnum
                         :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
@@ -209,8 +209,8 @@
     (is (= 0 (buffer-start rb)))
     (is (= 15 (buffer-end rb)))
     (is (= 15 (buffer-count rb)))
-    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
-                (buffer rb)))))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19)
+                (subseq (buffer rb) 0 15)))))
 
 (test take-element
   (let* ((b (make-array 10
