@@ -46,7 +46,8 @@
           :accessor buffer-count
           :type index)))
 
-(defgeneric clear (ring-buffer))
+(defgeneric clear (ring-buffer)
+  (:documentation "Reset indexes of RING-BUFFER to 0."))
 
 (defmethod clear ((ring-buffer ring-buffer))
   (with-slots (start end count) ring-buffer
@@ -55,7 +56,8 @@
     (setf count 0))
   nil)
 
-(defgeneric resize (ring-buffer new-size))
+(defgeneric resize (ring-buffer new-size)
+  (:documentation "Resize internal array of RING-BUFFER to NEW-SIZE."))
 
 (defmethod resize ((ring-buffer ring-buffer) new-size)
   (with-slots (buffer size element-type start end count) ring-buffer
@@ -83,7 +85,8 @@
       (setf end count)))
   ring-buffer)
 
-(defgeneric add-element (ring-buffer element))
+(defgeneric add-element (ring-buffer element)
+  (:documentation "Add ELEMENT to RING-BUFFER."))
 
 (defmethod add-element ((ring-buffer ring-buffer) element)
   (when (= (buffer-count ring-buffer) (buffer-size ring-buffer))
@@ -96,7 +99,9 @@
     (incf end))
   element)
 
-(defgeneric add-elements (ring-buffer seq &key start end))
+(defgeneric add-elements (ring-buffer seq &key start end)
+  (:documentation
+   "Add the elements between START and END in SEQ to RING-BUFFER."))
 
 (defmethod add-elements ((ring-buffer ring-buffer) seq &key (start 0) end)
   (let* ((seq-start start)
@@ -130,7 +135,8 @@
          (incf end length)))))
   seq)
 
-(defgeneric take-element (ring-buffer))
+(defgeneric take-element (ring-buffer)
+  (:documentation "Take one element from RING-BUFFER."))
 
 (defmethod take-element ((ring-buffer ring-buffer))
   (with-slots (buffer size start end count) ring-buffer
@@ -143,7 +149,10 @@
           (decf count)
           (values element t)))))
 
-(defgeneric take-elements (ring-buffer seq &key start end))
+(defgeneric take-elements (ring-buffer seq &key start end)
+  (:documentation
+   "Take elements from RING-BUFFER and put them in SEQ between START and END.
+The index of the first element of SEQ that was not updated is returned."))
 
 (defmethod take-elements ((ring-buffer ring-buffer) seq &key (start 0) end)
   (let* ((seq-start start)
