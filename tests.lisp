@@ -4,13 +4,322 @@
 ;;;; See the file LICENSE for terms of use and distribution.
 
 (defpackage :in-memory-streams/tests
-  (:use :cl :fiveam :in-memory-streams))
+  (:use :cl :fiveam :in-memory-streams)
+  (:import-from :in-memory-streams
+                add-element
+                add-elements
+                buffer
+                buffer-count
+                buffer-element-type
+                buffer-end
+                buffer-size
+                buffer-start
+                clear
+                resize
+                ring-buffer
+                take-element
+                take-elements))
 
 (in-package :in-memory-streams/tests)
 
 
 (def-suite in-memory-streams
   :description "Unit tests for in-memory streams")
+
+
+(def-suite ring-buffers
+  :description "Unit tests for ring buffers"
+  :in in-memory-streams)
+
+(in-suite ring-buffers)
+
+(test make-instance
+  (let* ((b (make-array 10 :element-type 'fixnum))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (is (typep rb 'ring-buffer))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 2 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 3 (buffer-count rb)))))
+
+(test clear
+  (let* ((b (make-array 10 :element-type 'fixnum))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (clear rb)
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 0 (buffer-end rb)))
+    (is (= 0 (buffer-count rb)))))
+
+(test resize
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(0 0 5 6 7 0 0 0 0 0)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (resize rb 20)
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 3 (buffer-end rb)))
+    (is (= 3 (buffer-count rb)))
+    (is (equalp #(5 6 7) (subseq (buffer rb) 0 3))))
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 8
+                            :end 2
+                            :count 4)))
+    (resize rb 20)
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 4 (buffer-end rb)))
+    (is (= 4 (buffer-count rb)))
+    (is (equalp #(5 6 7 8) (subseq (buffer rb) 0 4)))))
+
+(test add-element
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(0 0 5 6 7 0 0 0 0 0)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (add-element rb 8)
+    (add-element rb 9)
+    (add-element rb 10)
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 2 (buffer-start rb)))
+    (is (= 8 (buffer-end rb)))
+    (is (= 6 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 8 9 10 0 0) (buffer rb)))
+    (loop :for i :from 11 :to 19
+          :do (add-element rb i))
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 15 (buffer-end rb)))
+    (is (= 15 (buffer-count rb)))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
+                (buffer rb))))
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 8
+                            :end 2
+                            :count 4)))
+    (add-element rb 9)
+    (add-element rb 10)
+    (add-element rb 11)
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 8 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 7 (buffer-count rb)))
+    (is (equalp #(7 8 9 10 11 0 0 0 5 6) (buffer rb)))
+    (loop :for i :from 12 :to 19
+          :do (add-element rb i))
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 15 (buffer-end rb)))
+    (is (= 15 (buffer-count rb)))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
+                (buffer rb)))))
+
+(test add-elements
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(0 0 5 6 7 0 0 0 0 0)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (add-elements rb #(8 9 10))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 2 (buffer-start rb)))
+    (is (= 8 (buffer-end rb)))
+    (is (= 6 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 8 9 10 0 0) (buffer rb)))
+    (add-elements rb #(11 12 13 14 15 16 17 18 19))
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 15 (buffer-end rb)))
+    (is (= 15 (buffer-count rb)))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
+                (buffer rb))))
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 8
+                            :end 2
+                            :count 4))
+         (nums #(9 10 11 12 13 14 15 16 17 18 19)))
+    (add-elements rb nums :end 3)
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 8 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 7 (buffer-count rb)))
+    (is (equalp #(7 8 9 10 11 0 0 0 5 6) (buffer rb)))
+    (add-elements rb nums :start 3)
+    (is (= 20 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 15 (buffer-end rb)))
+    (is (= 15 (buffer-count rb)))
+    (is (equalp #(5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 0 0 0 0 0)
+                (buffer rb)))))
+
+(test take-element
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(0 0 5 6 7 0 0 0 0 0)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3)))
+    (is (= 5 (take-element rb)))
+    (is (= 6 (take-element rb)))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 4 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 1 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 0 0 0 0 0) (buffer rb)))
+    (is (= 7 (take-element rb)))
+    (is-false (take-element rb))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 5 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 0 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 0 0 0 0 0) (buffer rb))))
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 8
+                            :end 2
+                            :count 4)))
+    (is (= 5 (take-element rb)))
+    (is (= 6 (take-element rb)))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 0 (buffer-start rb)))
+    (is (= 2 (buffer-end rb)))
+    (is (= 2 (buffer-count rb)))
+    (is (equalp #(7 8 0 0 0 0 0 0 5 6) (buffer rb)))
+    (is (= 7 (take-element rb)))
+    (is (= 8 (take-element rb)))
+    (is-false (take-element rb))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 2 (buffer-start rb)))
+    (is (= 2 (buffer-end rb)))
+    (is (= 0 (buffer-count rb)))
+    (is (equalp #(7 8 0 0 0 0 0 0 5 6) (buffer rb)))))
+
+(test take-elements
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(0 0 5 6 7 0 0 0 0 0)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 2
+                            :end 5
+                            :count 3))
+         (seq (make-array 5 :element-type 'fixnum)))
+    (= 2 (take-elements rb seq :end 2))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 4 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 1 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 0 0 0 0 0) (buffer rb)))
+    (is (= 3 (take-elements rb seq :start 2)))
+    (is (= 0 (take-elements rb seq)))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 5 (buffer-start rb)))
+    (is (= 5 (buffer-end rb)))
+    (is (= 0 (buffer-count rb)))
+    (is (equalp #(0 0 5 6 7 0 0 0 0 0) (buffer rb))))
+  (let* ((b (make-array 10
+                        :element-type 'fixnum
+                        :initial-contents '(7 8 0 0 0 0 0 0 5 6)))
+         (rb (make-instance 'ring-buffer
+                            :buffer b
+                            :size 10
+                            :element-type 'fixnum
+                            :start 8
+                            :end 2
+                            :count 4))
+         (seq (make-array 5 :element-type 'fixnum)))
+    (is (= 3 (take-elements rb seq :end 3)))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 1 (buffer-start rb)))
+    (is (= 2 (buffer-end rb)))
+    (is (= 1 (buffer-count rb)))
+    (is (equalp #(7 8 0 0 0 0 0 0 5 6) (buffer rb)))
+    (is (= 4 (take-elements rb seq :start 3)))
+    (is (= 4 (take-elements rb seq :start 4)))
+    (is (= 10 (buffer-size rb)))
+    (is (eql 'fixnum (buffer-element-type rb)))
+    (is (= 2 (buffer-start rb)))
+    (is (= 2 (buffer-end rb)))
+    (is (= 0 (buffer-count rb)))
+    (is (equalp #(7 8 0 0 0 0 0 0 5 6) (buffer rb)))))
 
 
 (def-suite input-streams
