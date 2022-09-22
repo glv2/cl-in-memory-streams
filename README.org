@@ -141,18 +141,21 @@ The following example interleaves the elements of 2 streams.
 => #(:A 0 :B 1 :C 2)
 #+END_SRC
 
-The following example computes a running average of the last 3 numbers of the
-input stream.
+The following example computes a moving average using 3 numbers of the input
+stream.
 
 #+BEGIN_SRC lisp
   (let ((y 0.0d0)
         (z 0.0d0))
-    (defun running-average (input output)
+    (defun moving-average (input output &key reset)
+      (when reset
+        (setf y 0.0d0)
+        (setf z 0.0d0))
       (let ((x (read-element input nil nil)))
         (when x
           (write-element (/ (+ x y z) 3.0d0) output)
           (shiftf z y x)
-          (running-average input output)))))
+          (moving-average input output)))))
 
   (let ((numbers #(1.1688306397068886d0 1.8379697869542646d0 0.6229625662395764d0
                    0.14284584292221325d0 1.396517204140343d0 1.735972750395848d0
@@ -160,7 +163,7 @@ input stream.
                    1.5689075891259785d0)))
     (with-input-stream (input numbers :element-type 'double-float)
       (with-output-stream (output :element-type 'double-float)
-        (running-average input output))))
+        (moving-average input output :reset t))))
 
 => #(0.38961021323562955d0 1.002266808887051d0 1.2099209976335765d0
      0.8679260653720181d0 0.7207752044340442d0 1.0917785991528015d0
