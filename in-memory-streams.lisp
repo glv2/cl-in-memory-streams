@@ -6,11 +6,13 @@
 (defpackage :in-memory-streams
   (:nicknames :ims)
   (:use :cl :trivial-gray-streams)
-  (:export get-elements
+  (:export *initial-buffer-size*
+           get-elements
            make-input-stream
            make-io-stream
            make-output-stream
            read-element
+           stream-elements
            stream-length
            write-element
            with-input-stream
@@ -201,6 +203,22 @@ The index of the first element of SEQ that was not updated is returned."))
 (defmethod stream-length ((stream in-memory-stream))
   (buffer-count (buffer stream)))
 
+(defgeneric stream-elements (stream)
+    (:documentation
+     "Return a vector containing the elements in STREAM without removing
+them from STREAM."))
+
+(defmethod stream-elements ((stream in-memory-stream))
+  (with-slots (buffer size element-type start end count) (buffer stream)
+    (let ((elements (make-array count :element-type element-type)))
+      (if (< start end)
+          (replace elements buffer :start2 start :end2 end)
+          (let* ((length1 (- size start))
+                 (length2 (- count length1)))
+            (replace elements buffer :end1 length1 :start2 start)
+            (replace elements buffer :start1 length1 :end2 length2)))
+      elements)))
+
 
 ;;;
 ;;; Input stream
@@ -266,6 +284,8 @@ ELEMENT-TYPE. The result of the last form of BODY is returned."
 ;;; Output stream
 ;;;
 
+(defparameter *initial-buffer-size* 128)
+
 (defclass output-stream (in-memory-stream fundamental-output-stream)
   ())
 
@@ -297,7 +317,7 @@ ELEMENT-TYPE. The result of the last form of BODY is returned."
 (defun make-output-stream (&key element-type)
   "Return an output stream which will accumulate the elements written to it for
 the benefit of the GET-ELEMENTS function."
-  (let* ((length 128)
+  (let* ((length *initial-buffer-size*)
          (element-type (cond
                          (element-type element-type)
                          (t t)))
@@ -330,7 +350,7 @@ haven't been consumed by a call to GET-ELEMENTS within BODY) are returned."
 (defun make-io-stream (&key element-type)
   "Return a stream which will supply the elements that have been written to it
 in order."
-  (let* ((length 128)
+  (let* ((length *initial-buffer-size*)
          (element-type (cond
                          (element-type element-type)
                          (t t)))

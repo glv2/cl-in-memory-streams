@@ -1,6 +1,6 @@
 #+TITLE: in-memory-streams
 #+AUTHOR: Guillaume LE VAILLANT
-#+DATE: 2022-09-20
+#+DATE: 2022-09-23
 #+EMAIL: glv@posteo.net
 #+LANGUAGE: en
 #+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
@@ -77,6 +77,9 @@ Within /body/, /var/ is bound to an output stream. After all the forms in
 that haven't been consumed by a call to /get-elements/ within /body/) are
 returned.
 
+The ~*initial-buffer-size*~ parameter indicates the initial size to use for the
+internal buffer when creating an output stream.
+
 To write one element to an output stream, the /write-element/ method must be
 used instead of /write-byte/.
 
@@ -122,6 +125,13 @@ functions for input streams and for output streams can be used with io streams
 #+END_SRC
 
 Return the number of elements in a /stream/.
+
+#+BEGIN_SRC lisp
+  (stream-elements stream) => vector
+#+END_SRC
+
+Return a vector containing the elements in /stream/ without removing them
+from /stream/.
 
 * Examples
 
