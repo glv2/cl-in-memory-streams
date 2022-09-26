@@ -47,9 +47,12 @@ and /end/ in order.
 Within /body/, /var/ is bound to an input stream defined by /seq/, /start/,
 /end/ and /element-type/. The result of the last form of /body/ is returned.
 
-To get one element from an input stream, the /read-element/ method should be
-used instead of /read-byte/. But if the stream contains integers, /read-byte/
-will work too.
+The /read-element/ method should be used to get one element from an input
+stream. Using /read-byte/ or /read-char/ on an input stream will also work if
+the stream contains respectively integers or characters. Using /read-element/
+on a basic stream (i.e. not a /in-memory-streams::input-stream/) will also work
+and call either /read-byte/ or /read-char/ depending on the stream element
+type.
 
 #+BEGIN_SRC lisp
   (read-element stream &optional eof-error-p eof-value) => element
@@ -81,9 +84,12 @@ returned.
 The ~*initial-buffer-size*~ parameter indicates the initial size to use for the
 internal buffer when creating an output stream.
 
-To write one element to an output stream, the /write-element/ method should be
-used instead of /write-byte/. But if the stream contains integers, /write-byte/
-will work too.
+The /write-element/ method should be used to write one element to an output
+stream. Using /write-byte/ or /write-char/ on an output stream will also work
+if the stream was set to accept respectively integers or characters. Using
+/write-element/ on a basic stream (i.e. not
+a /in-memory-streams::output-stream/) will also work and call either
+/write-byte/ or /write-char/ depending on the stream element type.
 
 #+BEGIN_SRC lisp
   (write-element element stream) => element

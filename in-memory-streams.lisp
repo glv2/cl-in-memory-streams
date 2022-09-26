@@ -275,6 +275,9 @@ STREAM."))
 (defmethod stream-read-byte ((stream input-stream))
   (read-element stream nil :eof))
 
+(defmethod stream-read-char ((stream input-stream))
+  (read-element stream nil :eof))
+
 (defmethod stream-read-sequence ((stream input-stream) seq start end
                                  &key &allow-other-keys)
   (take-elements (buffer stream) seq :start start :end end))
@@ -336,6 +339,9 @@ ELEMENT-TYPE. The result of the last form of BODY is returned."
 
 (defmethod stream-write-byte ((stream output-stream) byte)
   (write-element byte stream))
+
+(defmethod stream-write-char ((stream output-stream) character)
+  (write-element character stream))
 
 (defmethod stream-write-sequence ((stream output-stream) seq start end
                                   &key &allow-other-keys)

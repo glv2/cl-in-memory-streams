@@ -428,6 +428,14 @@
     (is (eql :eof (read-byte s nil :eof)))
     (signals end-of-file (read-byte s))))
 
+(test read-char
+  (with-input-stream (s #(#\a #\b #\c #\d #\e) :element-type 'character :end 3)
+    (is (char= #\a (read-char s)))
+    (is (char= #\b (read-char s)))
+    (is (char= #\c (read-char s)))
+    (is (eql :eof (read-char s nil :eof)))
+    (signals end-of-file (read-char s))))
+
 (test read-sequence
   (with-input-stream (s #(0 1 2 3 4 5 6 7 8 9) :element-type 'fixnum)
     (let ((seq (make-array 5 :element-type 'fixnum)))
@@ -515,6 +523,16 @@
                (is (= 4 (write-byte 4 s))))))
     (is (= 5 (length seq)))
     (is (equalp #(0 1 2 3 4) seq))))
+
+(test write-char
+  (let ((seq (with-output-stream (s :element-type 'character)
+               (is (char= #\a (write-char #\a s)))
+               (is (char= #\b (write-char #\b s)))
+               (is (char= #\c (write-char #\c s)))
+               (is (char= #\d (write-char #\d s)))
+               (is (char= #\e (write-char #\e s))))))
+    (is (= 5 (length seq)))
+    (is (equalp #(#\a #\b #\c #\d #\e) seq))))
 
 (test write-sequence
   (with-output-stream (s :element-type 'fixnum)
