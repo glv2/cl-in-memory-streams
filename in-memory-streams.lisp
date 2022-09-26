@@ -15,6 +15,7 @@
            stream-elements
            stream-length
            stream-map
+           stream-ref
            write-element
            with-input-stream
            with-io-stream
@@ -65,7 +66,7 @@
 (defmethod resize ((ring-buffer ring-buffer) new-size)
   (with-slots (buffer size element-type start end count) ring-buffer
     (when (> count new-size)
-      (error "Wrong size of for a buffer containing ~d bytes: ~d."
+      (error "Invalid size for a buffer containing ~d elements: ~d."
              count new-size))
     (let ((new-buffer (make-array new-size :element-type element-type)))
       (when (plusp count)
@@ -203,6 +204,17 @@ The index of the first element of SEQ that was not updated is returned."))
 
 (defmethod stream-length ((stream in-memory-stream))
   (buffer-count (buffer stream)))
+
+(defgeneric stream-ref (stream index)
+  (:documentation
+   "Return the element at INDEX in STREAM without removing it from STREAM."))
+
+(defmethod stream-ref ((stream in-memory-stream) index)
+  (with-slots (buffer size start count) (buffer stream)
+    (if (< index count)
+        (aref buffer (mod (+ start index) size))
+        (error "Invalid index for a stream containing ~d elements: ~d."
+               count index))))
 
 (defgeneric stream-elements (stream)
     (:documentation

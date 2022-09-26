@@ -127,6 +127,12 @@ functions for input streams and for output streams can be used with io streams
 Return the number of elements in a /stream/.
 
 #+BEGIN_SRC lisp
+  (stream-ref stream index) => element
+#+END_SRC
+
+Return the element at /index/ in /stream/ without removing it from /stream/.
+
+#+BEGIN_SRC lisp
   (stream-elements stream) => vector
 #+END_SRC
 
