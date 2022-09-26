@@ -50,7 +50,7 @@ Within /body/, /var/ is bound to an input stream defined by /seq/, /start/,
 The /read-element/ method should be used to get one element from an input
 stream. Using /read-byte/ or /read-char/ on an input stream will also work if
 the stream contains respectively integers or characters. Using /read-element/
-on a basic stream (i.e. not a /in-memory-streams::input-stream/) will also work
+on a basic stream (i.e. not a ~in-memory-streams::input-stream~) will also work
 and call either /read-byte/ or /read-char/ depending on the stream element
 type.
 
@@ -88,7 +88,7 @@ The /write-element/ method should be used to write one element to an output
 stream. Using /write-byte/ or /write-char/ on an output stream will also work
 if the stream was set to accept respectively integers or characters. Using
 /write-element/ on a basic stream (i.e. not
-a /in-memory-streams::output-stream/) will also work and call either
+a ~in-memory-streams::output-stream~) will also work and call either
 /write-byte/ or /write-char/ depending on the stream element type.
 
 #+BEGIN_SRC lisp
@@ -151,9 +151,9 @@ from /stream/.
   (stream-map function stream) => nil
 #+END_SRC
 
-Apply /function/ to each element in /stream/ without removing them from STREAM.
-Note that the results of applying /function/ to the elements are not collected.
-If you need to keep them, your /function/ must take care of that.
+Apply /function/ to each element in /stream/ without removing them from
+/stream/. Note that the results of applying /function/ to the elements are not
+collected. If you need to keep them, your /function/ must take care of that.
 
 * Examples
 
