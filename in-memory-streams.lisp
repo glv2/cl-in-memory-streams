@@ -14,6 +14,7 @@
            read-element
            stream-elements
            stream-length
+           stream-map
            write-element
            with-input-stream
            with-io-stream
@@ -218,6 +219,18 @@ them from STREAM."))
             (replace elements buffer :end1 length1 :start2 start)
             (replace elements buffer :start1 length1 :end2 length2)))
       elements)))
+
+(defgeneric stream-map (function stream)
+  (:documentation
+   "Apply FUNCTION to each element in STREAM without removing them from
+STREAM."))
+
+(defmethod stream-map (function (stream in-memory-stream))
+  (with-slots (buffer size start count) (buffer stream)
+    (do ((i start (mod (1+ i) size))
+         (n count (1- n)))
+        ((zerop n))
+      (funcall function (aref buffer i)))))
 
 
 ;;;

@@ -133,6 +133,14 @@ Return the number of elements in a /stream/.
 Return a vector containing the elements in /stream/ without removing them
 from /stream/.
 
+#+BEGIN_SRC
+  (stream-map function stream) => nil
+#+END_SRC
+
+Apply /function/ to each element in /stream/ without removing them from STREAM.
+Note that the results of applying /function/ to the elements are not collected.
+If you need to keep them, your /function/ must take care of that.
+
 * Examples
 
 The following example interleaves the elements of 2 streams.
@@ -155,30 +163,34 @@ The following example computes a moving average using 3 numbers of the input
 stream.
 
 #+BEGIN_SRC lisp
-  (let ((y 0.0d0)
-        (z 0.0d0))
-    (defun moving-average (input output &key reset)
-      (when reset
-        (setf y 0.0d0)
-        (setf z 0.0d0))
-      (let ((x (read-element input nil nil)))
-        (when x
-          (write-element (/ (+ x y z) 3.0d0) output)
-          (shiftf z y x)
-          (moving-average input output)))))
+  (defun average (stream)
+    (let ((a 0.0d0))
+      (stream-map (lambda (x) (incf a x)) stream)
+      (/ a (stream-length stream))))
 
-  (let ((numbers #(1.1688306397068886d0 1.8379697869542646d0 0.6229625662395764d0
-                   0.14284584292221325d0 1.396517204140343d0 1.735972750395848d0
-                   0.7149398779650111d0 1.0309614956803217d0 0.9725293631719216d0
-                   1.5689075891259785d0)))
-    (with-input-stream (input numbers :element-type 'double-float)
-      (with-output-stream (output :element-type 'double-float)
-        (moving-average input output :reset t))))
+  (defun moving-average (input output n)
+    (with-io-stream (s :element-type 'double-float)
+      (loop :for x = (read-element input nil nil)
+            :while x
+            :do (progn
+                  (write-element x s)
+                  (unless (< (stream-length s) n)
+                    (write-element (average s) output)
+                    (read-element s))))))
 
-=> #(0.38961021323562955d0 1.002266808887051d0 1.2099209976335765d0
-     0.8679260653720181d0 0.7207752044340442d0 1.0917785991528015d0
-     1.282476610833734d0 1.1606247080137269d0 0.9061435789390848d0
-     1.1907994826594073d0)
+  (defparameter *numbers*
+    #(1.1688306397068886d0 1.8379697869542646d0 0.6229625662395764d0
+      0.14284584292221325d0 1.396517204140343d0 1.735972750395848d0
+      0.7149398779650111d0 1.0309614956803217d0 0.9725293631719216d0
+      1.5689075891259785d0))
+
+  (with-input-stream (input *numbers* :element-type 'double-float)
+    (with-output-stream (output :element-type 'double-float)
+      (moving-average input output 3)))
+
+=> #(1.2099209976335765d0 0.8679260653720181d0 0.7207752044340442d0
+     1.0917785991528015d0 1.282476610833734d0 1.1606247080137269d0
+     0.9061435789390848d0 1.1907994826594073d0)
 #+END_SRC
 
 * Tests
