@@ -267,6 +267,11 @@ STREAM."))
       (eof-error-p (error 'end-of-file :stream stream))
       (t eof-value))))
 
+(defmethod read-element ((stream stream) &optional (eof-error-p t) eof-value)
+  (if (eql (stream-element-type stream) 'character)
+      (read-char stream eof-error-p eof-value)
+      (read-byte stream eof-error-p eof-value)))
+
 (defmethod stream-read-byte ((stream input-stream))
   (read-element stream nil :eof))
 
@@ -323,6 +328,11 @@ ELEMENT-TYPE. The result of the last form of BODY is returned."
 
 (defmethod write-element (element (stream output-stream))
   (add-element (buffer stream) element))
+
+(defmethod write-element (element (stream stream))
+  (if (eql (stream-element-type stream) 'character)
+      (write-char element stream)
+      (write-byte element stream)))
 
 (defmethod stream-write-byte ((stream output-stream) byte)
   (write-element byte stream))
