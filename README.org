@@ -6,6 +6,8 @@
 #+OPTIONS: num:nil toc:nil html-postamble:nil html-scripts:nil
 #+HTML_DOCTYPE: html5
 
+The active repository is at https://codeberg.org/glv/cl-in-memory-streams
+
 * Description
 
 *in-memory-streams* is a library implementing in-memory input streams,
